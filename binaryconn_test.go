@@ -81,13 +81,6 @@ func TestBinaryConn(t *testing.T) {
 
 	defer conn.Close()
 
-	if g_remote == nil {
-		g_remote = conn.RemoteAddr()
-	}
-	if g_local == nil {
-		g_local = conn.LocalAddr()
-	}
-
 	var sessionId string
 	for _, c := range resp.Cookies() {
 		if c.Name == "sessionId" {
@@ -112,4 +105,18 @@ func TestBinaryConn(t *testing.T) {
 	if str != "HELLO\n" {
 		t.Fatalf("message=%s, want %s", str, "HELLO\n")
 	}
+
+	if g_remote == nil {
+		t.Error("g_remote is nil")
+	} else if g_remote.String() != conn.LocalAddr().String() || g_remote.Network() != conn.LocalAddr().Network() {
+		t.Errorf("remote address: %v != %v\n", g_remote, conn.LocalAddr())
+	}
+	t.Log("remote OK")
+
+	if g_local == nil {
+		t.Error("g_local is nil")
+	} else if g_local.String() != conn.RemoteAddr().String() || g_local.Network() != conn.RemoteAddr().Network() {
+		t.Errorf("remote address: %v != %v\n", g_local, conn.RemoteAddr())
+	}
+
 }
