@@ -5,5 +5,5 @@ Implement net.Conn interface based on [garyburd / go-websocket](https://github.c
 
 ## Installation
 
-    go get github.com/zhangpeihao/websocket
+    go get github.com/zhangpeihao/gowebsocket
 
