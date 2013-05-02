@@ -7,3 +7,7 @@ Implement net.Conn interface based on [garyburd / go-websocket](https://github.c
 
     go get github.com/zhangpeihao/gowebsocket
 
+## License
+
+Go-WebSocket is available under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.html).
+
