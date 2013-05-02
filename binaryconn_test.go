@@ -16,8 +16,9 @@ package zwebsocket_test
 
 import (
 	"bufio"
-	"github.com/garyburd/go-websocket/websocket"
+	"github.com/zhangpeihao/go-websocket/websocket"
 	"github.com/zhangpeihao/gowebsocket"
+	"net"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -27,6 +28,10 @@ import (
 type wsBinaryHandler struct {
 	*testing.T
 }
+
+var (
+	g_remote, g_local net.Addr
+)
 
 func (t wsBinaryHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "GET" {
@@ -39,6 +44,7 @@ func (t wsBinaryHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		t.Logf("bad origin: %s", r.Header.Get("Origin"))
 		return
 	}
+
 	conn, err := zwebsocket.NewBianryConn(w, r, http.Header{"Set-Cookie": {"sessionId=1234"}}, 1024, 1024)
 	if _, ok := err.(websocket.HandshakeError); ok {
 		t.Logf("bad handshake: %v", err)
@@ -49,6 +55,8 @@ func (t wsBinaryHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer conn.Close()
+	g_remote = conn.RemoteAddr()
+	g_local = conn.LocalAddr()
 	for {
 		br := bufio.NewReader(conn)
 		str, err := br.ReadString('\n')
@@ -72,6 +80,13 @@ func TestBinaryConn(t *testing.T) {
 	}
 
 	defer conn.Close()
+
+	if g_remote == nil {
+		g_remote = conn.RemoteAddr()
+	}
+	if g_local == nil {
+		g_local = conn.LocalAddr()
+	}
 
 	var sessionId string
 	for _, c := range resp.Cookies() {

@@ -20,7 +20,7 @@
 package zwebsocket
 
 import (
-	"github.com/garyburd/go-websocket/websocket"
+	"github.com/zhangpeihao/go-websocket/websocket"
 	"io"
 	"net"
 	"net/http"
@@ -31,9 +31,8 @@ import (
 // Implement the net.Conn interface.
 // All data are transfered in binary stream.
 type BinaryConn struct {
-	ws   *websocket.Conn
-	r    io.Reader
-	conn net.Conn
+	ws *websocket.Conn
+	r  io.Reader
 }
 
 // Connect a web socket hosr, and upgrade to web socket.
@@ -56,8 +55,7 @@ func Connect(urlstr string, readBufSize, writeBufSize int) (conn *BinaryConn, re
 		return
 	}
 	conn = &BinaryConn{
-		ws:   ws,
-		conn: c,
+		ws: ws,
 	}
 	return
 }
@@ -128,12 +126,12 @@ func (conn *BinaryConn) Close() error {
 
 // LocalAddr returns the local network address.
 func (conn *BinaryConn) LocalAddr() net.Addr {
-	return conn.LocalAddr()
+	return conn.ws.LocalAddr()
 }
 
 // RemoteAddr returns the remote network address.
 func (conn *BinaryConn) RemoteAddr() net.Addr {
-	return conn.RemoteAddr()
+	return conn.ws.RemoteAddr()
 }
 
 // SetDeadline sets the read and write deadlines associated
