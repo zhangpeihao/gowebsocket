@@ -16,7 +16,7 @@ package zwebsocket_test
 
 import (
 	"bufio"
-	"github.com/zhangpeihao/go-websocket/websocket"
+	"github.com/garyburd/go-websocket/websocket"
 	"github.com/zhangpeihao/gowebsocket"
 	"net"
 	"net/http"

@@ -20,7 +20,7 @@
 package zwebsocket
 
 import (
-	"github.com/zhangpeihao/go-websocket/websocket"
+	"github.com/garyburd/go-websocket/websocket"
 	"io"
 	"net"
 	"net/http"
