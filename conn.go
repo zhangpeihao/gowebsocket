@@ -1,4 +1,4 @@
-// Copyright 2012, 2013 Gary Burd & Zhang Peihao
+// Copyright 2012, 2013 Gary Burd, Zhang Peihao, and Inhies
 //
 // Licensed under the Apache License, Version 2.0 (the "License"): you may
 // not use this file except in compliance with the License. You may obtain
@@ -17,6 +17,7 @@
 // The websocket package passes UTF-8 text to and from the network without
 // validation. It is the application's responsibility to validate the contents
 // of text messages.
+
 package zwebsocket
 
 import (
@@ -30,7 +31,7 @@ import (
 
 // Implement the net.Conn interface.
 // All data are transfered in binary stream.
-type BinaryConn struct {
+type Conn struct {
 	ws *websocket.Conn
 	r  io.Reader
 }
@@ -39,7 +40,7 @@ type BinaryConn struct {
 //
 // Examples:
 //	Connect("http://localhost:8081/websocket", 1024, 1024)
-func Connect(urlstr string, readBufSize, writeBufSize int) (conn *BinaryConn, resp *http.Response, err error) {
+func Connect(urlstr string, readBufSize, writeBufSize int) (conn *Conn, resp *http.Response, err error) {
 	var u *url.URL
 	var ws *websocket.Conn
 	var c net.Conn
@@ -54,20 +55,21 @@ func Connect(urlstr string, readBufSize, writeBufSize int) (conn *BinaryConn, re
 		c.Close()
 		return
 	}
-	conn = &BinaryConn{
+	conn = &Conn{
 		ws: ws,
 	}
 	return
 }
 
 // Create a server side connection.
-func NewBianryConn(w http.ResponseWriter, r *http.Request, responseHeader http.Header,
-	readBufSize, writeBufSize int) (conn *BinaryConn, err error) {
+func NewConn(w http.ResponseWriter, r *http.Request, responseHeader http.Header,
+	readBufSize, writeBufSize int) (conn *Conn, err error) {
 	var ws *websocket.Conn
-	if ws, err = websocket.Upgrade(w, r.Header, responseHeader, 1024, 1024); err != nil {
+	if ws, err = websocket.Upgrade(w, r.Header, responseHeader, readBufSize,
+		writeBufSize); err != nil {
 		return
 	}
-	conn = &BinaryConn{
+	conn = &Conn{
 		ws: ws,
 	}
 	return
@@ -76,7 +78,7 @@ func NewBianryConn(w http.ResponseWriter, r *http.Request, responseHeader http.H
 // Read reads data from the connection.
 // Read can be made to time out and return a Error with Timeout() == true
 // after a fixed time limit; see SetDeadline and SetReadDeadline.
-func (conn *BinaryConn) Read(b []byte) (n int, err error) {
+func (conn *Conn) Read(b []byte) (n int, err error) {
 	var opCode int
 	if conn.r == nil {
 		// New message
@@ -85,10 +87,12 @@ func (conn *BinaryConn) Read(b []byte) (n int, err error) {
 			if opCode, r, err = conn.ws.NextReader(); err != nil {
 				return
 			}
-			if opCode == websocket.OpBinary {
-				conn.r = r
-				break
+			if opCode != websocket.OpBinary && opCode != websocket.OpText {
+				continue
 			}
+
+			conn.r = r
+			break
 		}
 	}
 
@@ -106,7 +110,7 @@ func (conn *BinaryConn) Read(b []byte) (n int, err error) {
 // Write writes data to the connection.
 // Write can be made to time out and return a Error with Timeout() == true
 // after a fixed time limit; see SetDeadline and SetWriteDeadline.
-func (conn *BinaryConn) Write(b []byte) (n int, err error) {
+func (conn *Conn) Write(b []byte) (n int, err error) {
 	var w io.WriteCloser
 	if w, err = conn.ws.NextWriter(websocket.OpBinary); err != nil {
 		return
@@ -120,17 +124,17 @@ func (conn *BinaryConn) Write(b []byte) (n int, err error) {
 
 // Close closes the connection.
 // Any blocked Read or Write operations will be unblocked and return errors.
-func (conn *BinaryConn) Close() error {
+func (conn *Conn) Close() error {
 	return conn.ws.Close()
 }
 
 // LocalAddr returns the local network address.
-func (conn *BinaryConn) LocalAddr() net.Addr {
+func (conn *Conn) LocalAddr() net.Addr {
 	return conn.ws.LocalAddr()
 }
 
 // RemoteAddr returns the remote network address.
-func (conn *BinaryConn) RemoteAddr() net.Addr {
+func (conn *Conn) RemoteAddr() net.Addr {
 	return conn.ws.RemoteAddr()
 }
 
@@ -147,7 +151,7 @@ func (conn *BinaryConn) RemoteAddr() net.Addr {
 // the deadline after successful Read or Write calls.
 //
 // A zero value for t means I/O operations will not time out.
-func (conn *BinaryConn) SetDeadline(t time.Time) (err error) {
+func (conn *Conn) SetDeadline(t time.Time) (err error) {
 	if err = conn.ws.SetReadDeadline(t); err != nil {
 		return
 	}
@@ -156,7 +160,7 @@ func (conn *BinaryConn) SetDeadline(t time.Time) (err error) {
 
 // SetReadDeadline sets the deadline for future Read calls.
 // A zero value for t means Read will not time out.
-func (conn *BinaryConn) SetReadDeadline(t time.Time) error {
+func (conn *Conn) SetReadDeadline(t time.Time) error {
 	return conn.ws.SetReadDeadline(t)
 }
 
@@ -164,6 +168,6 @@ func (conn *BinaryConn) SetReadDeadline(t time.Time) error {
 // Even if write times out, it may return n > 0, indicating that
 // some of the data was successfully written.
 // A zero value for t means Write will not time out.
-func (conn *BinaryConn) SetWriteDeadline(t time.Time) error {
+func (conn *Conn) SetWriteDeadline(t time.Time) error {
 	return conn.ws.SetWriteDeadline(t)
 }
