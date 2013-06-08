@@ -12,12 +12,12 @@
 // License for the specific language governing permissions and limitations
 // under the License.
 
-package zwebsocket_test
+package zwebsocket
 
 import (
 	"bufio"
 	"github.com/garyburd/go-websocket/websocket"
-	"github.com/zhangpeihao/gowebsocket"
+	"github.com/inhies/gowebsocket"
 	"net"
 	"net/http"
 	"net/http/httptest"
