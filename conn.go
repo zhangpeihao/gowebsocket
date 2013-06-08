@@ -65,7 +65,8 @@ func Connect(urlstr string, readBufSize, writeBufSize int) (conn *Conn, resp *ht
 func NewConn(w http.ResponseWriter, r *http.Request, responseHeader http.Header,
 	readBufSize, writeBufSize int) (conn *Conn, err error) {
 	var ws *websocket.Conn
-	if ws, err = websocket.Upgrade(w, r.Header, responseHeader, 1024, 1024); err != nil {
+	if ws, err = websocket.Upgrade(w, r.Header, responseHeader, readBufSize,
+		writeBufSize); err != nil {
 		return
 	}
 	conn = &Conn{
