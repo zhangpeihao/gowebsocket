@@ -17,7 +17,6 @@ package zwebsocket
 import (
 	"bufio"
 	"github.com/garyburd/go-websocket/websocket"
-	"github.com/inhies/gowebsocket"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -45,7 +44,7 @@ func (t wsBinaryHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	conn, err := zwebsocket.NewBianryConn(w, r, http.Header{"Set-Cookie": {"sessionId=1234"}}, 1024, 1024)
+	conn, err := NewConn(w, r, http.Header{"Set-Cookie": {"sessionId=1234"}}, 1024, 1024)
 	if _, ok := err.(websocket.HandshakeError); ok {
 		t.Logf("bad handshake: %v", err)
 		http.Error(w, "Not a websocket handshake", 400)
@@ -74,7 +73,7 @@ func (t wsBinaryHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func TestBinaryConn(t *testing.T) {
 	s := httptest.NewServer(wsBinaryHandler{t})
 	defer s.Close()
-	conn, resp, err := zwebsocket.Connect(s.URL, 1024, 1024)
+	conn, resp, err := Connect(s.URL, 1024, 1024)
 	if err != nil {
 		t.Fatal("Connect err:", err)
 	}
