@@ -85,10 +85,12 @@ func (conn *BinaryConn) Read(b []byte) (n int, err error) {
 			if opCode, r, err = conn.ws.NextReader(); err != nil {
 				return
 			}
-			if opCode == websocket.OpBinary {
-				conn.r = r
-				break
+			if opCode != websocket.OpBinary && opCode != websocket.OpText {
+				continue
 			}
+
+			conn.r = r
+			break
 		}
 	}
 
